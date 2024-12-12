@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/static/cropped-favicon.png" type="image/png" />
+    <title>Certificate Generator</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <!-- Logo Section -->
+    <div class="d-flex justify-content-center" style="margin-top: 1rem">
+      <img
+        src="/static/logo.png"
+        alt="Logo"
+        class="img-fluid rounded"
+        style="max-width: 150px; height: auto"
+      />
+    </div>
+
+    <div class="container" style="margin-top: 1rem; margin-bottom: 2rem">
+      <!-- Your content here -->
+      <body class="bg-light">
+        <div class="container mt-1">
+          <div class="card shadow">
+            <div class="card-header bg-info text-black text-center fw-bold">
+              <h1>Certificate Generator</h1>
+            </div>
+            <div class="card-body">
+              <!-- Expandable FAQ Section -->
+              <div class="accordion mb-4" id="instructionsAccordion">
+                <div class="accordion-item">
+                  <h2 class="accordion-header" id="headingOne">
+                    <button
+                      class="accordion-button collapsed text-danger fw-bold"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseOne"
+                      aria-expanded="false"
+                      aria-controls="collapseOne"
+                    >
+                      Instructions for Using the Certificate Generator
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseOne"
+                    class="accordion-collapse collapse"
+                    aria-labelledby="headingOne"
+                    data-bs-parent="#instructionsAccordion"
+                  >
+                    <div class="accordion-body">
+                      <ul>
+                        <li>
+                          Upload a certificate template in JPG or PNG format.
+                        </li>
+                        <li>Upload an Excel file with participant data.</li>
+                        <li>
+                          PDF naming convention must be in a specific format.
+                          {Column_Name} replace Column_Name with actual column
+                          name that you gonna choose for your certificate
+                          content.
+                        </li>
+                        <li>
+                          Specify the start and end rows
+                          <ul>
+                            <li>
+                              <code>
+                                start:
+                                <span class="text-danger"> (1-based)</span>
+                              </code>
+                            </li>
+                          </ul>
+                          <ul>
+                            <li>
+                              <code>
+                                End Row:
+                                <span class="text-danger"> ( 0 )</span>
+                                for all the rows
+                              </code>
+                            </li>
+                          </ul>
+                        </li>
+                        <li>
+                          <span class="text-danger"
+                            >It is very much recommended to do it batch (Range)
+                            wise.</span
+                          >
+                        </li>
+                        <li>
+                          You will first have to write
+                          <strong>column names</strong> that you want to
+                          include.
+                          <code>{Name,Roll_Number,Course}</code>
+                        </li>
+                        <li>
+                          Provide <strong>Coordinates</strong> in the format:
+                          <code>x1,y1,x2,y2</code>.
+                        </li>
+                        <li>
+                          At the same time add the font style you choose for
+                          that specific column data
+                        </li>
+                        <li>
+                          User can open their image in paint or any other
+                          related software to determine the coordinates.
+                        </li>
+                        <li>
+                          Submit the form, and certificates will be generated in
+                          PDF format.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- End of FAQ Section -->
+              <form
+                action="/generate"
+                method="post"
+                enctype="multipart/form-data"
+              >
+                <!-- Certificate Template -->
+                <div class="mb-3">
+                  <label for="template" class="form-label">
+                    <span class="text-dark fw-bold"
+                      >Upload Certificate Template (JPG/PNG):</span
+                    >
+                  </label>
+                  <input
+                    type="file"
+                    name="template"
+                    id="template"
+                    accept="image/*"
+                    class="form-control fst-italic"
+                    required
+                  />
+                </div>
+
+                <!-- Participant Data -->
+                <div class="mb-3">
+                  <label for="data" class="form-label"
+                    ><span class="text-dark fw-bold"
+                      >Upload Participant Data (.xlsx):</span
+                    ></label
+                  >
+                  <input
+                    type="file"
+                    name="data"
+                    id="data"
+                    accept=".xlsx"
+                    class="form-control fst-italic"
+                    required
+                  />
+                </div>
+
+                <!-- Font Upload -->
+                <!-- <div class="mb-3">
+                  <label for="custom_font" class="form-label">
+                    <span class="text-dark fw-bold"
+                      >Upload Custom Font (.ttf/.ttc):</span
+                    >
+                  </label>
+                  <input
+                    type="file"
+                    name="custom_font"
+                    id="custom_font"
+                    accept=".ttf,.ttc"
+                    class="form-control fst-italic"
+                  />
+                  <small class="form-text text-muted">
+                    Upload a TrueType (.ttf) or TrueType Collection (.ttc) font
+                    file to customize the text style.
+                  </small>
+                </div> -->
+
+                <!-- Number of Columns -->
+                <div class="mb-3">
+                  <label for="num_columns" class="form-label"
+                    ><span class="text-dark fw-bold"
+                      >Number of Columns:</span
+                    ></label
+                  >
+                  <input
+                    type="number"
+                    id="num_columns"
+                    name="num_columns"
+                    class="form-control"
+                    min="1"
+                    required
+                  />
+                </div>
+
+                <!-- Input for Column Names -->
+                <div class="mb-3">
+                  <label for="column_names" class="form-label">
+                    <span class="text-dark fw-bold"
+                      >Enter Column Names (comma-separated):</span
+                    >
+                  </label>
+                  <input
+                    type="text"
+                    id="column_names"
+                    name="column_names"
+                    class="form-control fst-italic"
+                    placeholder="e.g., Name, Roll Number, Course"
+                    required
+                  />
+                  <small class="form-text text-muted">
+                    Enter the column names from your Excel file that you want to
+                    include on the certificate.
+                  </small>
+                </div>
+
+                <!-- Button to Generate Coordinate Input Fields -->
+                <div class="mb-3">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    onclick="generateColumnInputs()"
+                  >
+                    Generate Coordinate & Font Input Fields
+                  </button>
+                </div>
+
+                <!-- i will have to populate the below div once user enters the number of column they want to edit   -->
+                <div id="coordinates_container"></div>
+
+                <!-- Naming Convention -->
+                <div>
+                  <label for="naming_convention" class="form-label"
+                    ><span class="text-dark fw-bold"
+                      >Set PDF Naming Convention:</span
+                    ></label
+                  ><br />
+                  <input
+                    type="text"
+                    name="naming_convention"
+                    id="naming_convention"
+                    placeholder="Enter naming convention"
+                    class="form-control mb-1"
+                    required
+                  />
+                  <small class="form-text text-muted">
+                    eg. certificate_{name}_{index} follow this format. [ index =
+                    S.no. ] | {} -> fill with the column name you chose
+                    urself</small
+                  >
+                  <br />
+                  <small class="form-text text-muted">
+                    <span class="text-danger">NOTE</span> - you can arrange the
+                    {Column Name} and index at any place. Make sure u write in
+                    {}</small
+                  ><br />
+                  <small class="form-text text-muted">
+                    <span class="text-danger"
+                      >If there are any repeating name in file then i suggest
+                      you put the naming format such a way that it doesnt create
+                      problem</span
+                    >
+                  </small>
+                  <br /><br />
+                </div>
+
+                <!-- Generation Mode Selection -->
+                <div class="dropdown mb-3">
+                  <label
+                    for="generation_mode"
+                    class="form-label fw-bold text-dark"
+                    >Choose Generation Mode:</label
+                  ><br />
+                  <button
+                    class="btn btn-secondary dropdown-toggle"
+                    type="button"
+                    id="generationModeDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    Generator
+                  </button>
+                  <ul
+                    class="dropdown-menu w-100"
+                    aria-labelledby="generationModeDropdown"
+                  >
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        onclick="selectMode('range')"
+                        >Generate for All (Range) Participants</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item"
+                        href="#"
+                        onclick="selectMode('specific')"
+                        >Generate for Specific Participant</a
+                      >
+                    </li>
+                  </ul>
+                  <!-- i am getting the value for input from the script down there -->
+                  <!-- the value is then being passed to my app.py through the post method of form  -->
+                  <input
+                    type="hidden"
+                    name="generation_mode"
+                    id="generation_mode"
+                    required
+                  /><br /><br />
+                </div>
+
+                <!-- Serial number input (shown only when specific participant is selected) -->
+                <div id="serial_number_input" style="display: none">
+                  <label for="serial_number" class="form-label"
+                    >Enter Serial Number of Participant (1-based index):</label
+                  ><br />
+                  <input
+                    type="number"
+                    name="serial_number"
+                    id="serial_number"
+                    min="1"
+                    placeholder="Enter Serial Number"
+                    class="form-control"
+                  /><br /><br />
+                </div>
+                <!-- will be shown only when range option is selected  -->
+                <div id="row_range_inputs" style="display: none">
+                  <!-- Start Row -->
+                  <div class="mb-3">
+                    <label for="start" class="form-label"
+                      ><span class="text-dark fw-bold">Start Row</span>
+                      <span class="text-danger">(1-based):</span></label
+                    >
+                    <input
+                      type="number"
+                      name="start"
+                      id="start"
+                      min="1"
+                      class="form-control"
+                      placeholder="1"
+                    />
+                  </div>
+
+                  <!-- End Row -->
+                  <div class="mb-3">
+                    <label for="end" class="form-label"
+                      ><span class="fw-bold text-dark">End Row</span
+                      ><span class="text-danger">(1-based, 0 for all):</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="end"
+                      id="end"
+                      min="0"
+                      class="form-control"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+                <!-- --------------- hid it for a while -----------  -->
+                <!-- Name Box Coordinates -->
+                <!-- <div class="mb-3">
+                  <label for="name_box" class="form-label"
+                    ><span class="text-dark fw-bold"
+                      >Name Box Coordinates:</span
+                    ></label
+                  >
+                  <input
+                    type="text"
+                    name="name_box"
+                    id="name_box"
+                    class="form-control mb-1"
+                    placeholder="x1,y1,x2,y2"
+                    required
+                  />
+                  <small class="form-text text-muted"
+                    >Specify the top-left and bottom-right coordinates (e.g.,
+                    3347,2430,5445,2722)! Kinly write only in above mentioned
+                    format.</small
+                  >
+                </div> -->
+
+                <!-- Roll Number Position -->
+                <!-- <div class="mb-3">
+                  <label for="R_number_position" class="form-label"
+                    ><span class="text-dark fw-bold"
+                      >Roll Number Position:</span
+                    ></label
+                  >
+                  <input
+                    type="text"
+                    name="R_number_position"
+                    id="R_number_position"
+                    class="form-control mb-1"
+                    placeholder="x,y"
+                    required
+                  />
+                  <small class="form-text text-muted"
+                    >Hit and Trial Baby!!</small
+                  >
+                </div> -->
+                <!-- --------------------------------------------------------- -->
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-info w-100 fw-bold">
+                  Generate Certificates
+                </button>
+                <br /><br />
+              </form>
+
+              <!-- Button to Download Certificates -->
+              <div class="text-center">
+                <h2>Download Your Certificates</h2>
+                <form action="/download" method="GET">
+                  <button type="submit">Download Certificates</button>
+                </form>
+              </div>
+            </div>
+            <div class="card-footer">
+              {% with messages = get_flashed_messages() %} {% if messages %}
+              <ul class="list-group">
+                {% for message in messages %}
+                <li class="list-group-item list-group-item-warning">
+                  {{ message }}
+                </li>
+                {% endfor %}
+              </ul>
+              {% endif %} {% endwith %}
+            </div>
+          </div>
+        </div>
+      </body>
+    </div>
+
+    <!-- Bootstrap JS (for interactive features) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JavaScript to Show/Hide Inputs Based on Generation Mode -->
+    <script>
+      function selectMode(mode) {
+        // Update the hidden input with the selected mode
+        document.getElementById("generation_mode").value = mode;
+
+        // Update the dropdown button text
+        const dropdownButton = document.getElementById(
+          "generationModeDropdown"
+        );
+        dropdownButton.textContent =
+          mode === "range"
+            ? "Generate for All (Range) Participants"
+            : "Generate for Specific Participant";
+
+        // Show/Hide input fields based on the selected mode
+        const startEndRowInputs = document.getElementById("row_range_inputs");
+        const specificParticipantInput = document.getElementById(
+          "serial_number_input"
+        );
+        // Event listener to toggle visibility of inputs based on generation mode
+        if (mode === "range") {
+          startEndRowInputs.style.display = "block"; // Show start and end row inputs
+          specificParticipantInput.style.display = "none"; // Hide specific participant input
+        } else if (mode === "specific") {
+          startEndRowInputs.style.display = "none"; // Hide start and end row inputs
+          specificParticipantInput.style.display = "block"; // Show specific participant input
+        }
+      }
+
+      function generateColumnInputs() {
+        const columnNamesInput = document.getElementById("column_names").value;
+        const coordinatesContainer = document.getElementById(
+          "coordinates_container"
+        );
+
+        // Clear any existing input fields
+        coordinatesContainer.innerHTML = "";
+
+        if (!columnNamesInput.trim()) {
+          alert("Please enter column names before generating inputs!");
+          return;
+        }
+
+        // Parse column names
+        const columnNames = columnNamesInput
+          .split(",")
+          .map((name) => name.trim());
+
+        // Generate input fields for each column name
+        columnNames.forEach((name, index) => {
+          const fieldSet = document.createElement("div");
+          fieldSet.classList.add("mb-3");
+
+          // Label
+          const label = document.createElement("label");
+          label.classList.add("form-label", "fw-bold");
+          label.textContent = `Coordinates for ${name}:`;
+          fieldSet.appendChild(label);
+
+          // Coordinate input
+          const input = document.createElement("input");
+          input.type = "text";
+          input.name = `coordinates_${name}`;
+          input.placeholder = "x1,y1,x2,y2";
+          input.classList.add("form-control", "fst-italic", "mb-1");
+          input.required = true;
+          fieldSet.appendChild(input);
+
+          // Font file input
+          const fontLabel = document.createElement("label");
+          fontLabel.textContent = `Upload Font for ${name}:`;
+          fontLabel.classList.add("form-label", "fw-bold", "mt-2");
+          fieldSet.appendChild(fontLabel);
+
+          const fontInput = document.createElement("input");
+          fontInput.type = "file";
+          fontInput.name = `font_${name}`;
+          fontInput.accept = ".ttf,.ttc";
+          fontInput.classList.add("form-control", "fst-italic");
+          fontInput.required = true;
+          fieldSet.appendChild(fontInput);
+
+          // Append to the container
+
+          coordinatesContainer.appendChild(fieldSet);
+        });
+      }
+    </script>
+  </body>
+</html>
