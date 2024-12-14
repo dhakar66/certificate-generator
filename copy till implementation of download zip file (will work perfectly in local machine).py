@@ -6,8 +6,6 @@ from fpdf import FPDF # type: ignore
 from flask import Flask, request, render_template, send_file, flash, redirect, url_for # type: ignore
 from werkzeug.utils import secure_filename # type: ignore
 import io 
-import zipfile
-import shutil
 
 # suppress the warning and allow Pillow to handle larger images without quality loss.
 Image.MAX_IMAGE_PIXELS = None
@@ -48,7 +46,7 @@ def generate_certificate(data_row, template_path, output_path, column_coordinate
         try:
             x1, y1, x2, y2 = map(int, coord_str.split(","))
         except ValueError:
-            flash(f"Invalid coordinates for column {column}: {coord_str}")
+            print(f"Invalid coordinates for column {column}: {coord_str}")
             continue
         
         font_path = column_fonts.get(column, "Baskerville.ttc")  # Use a default font if not provided
@@ -76,7 +74,7 @@ def generate_certificate(data_row, template_path, output_path, column_coordinate
 
     # Save the certificate
     template.save(output_path, "PDF", resolution=100.0)
-    # print(f"Certificate generated at {output_path}")
+    print(f"Certificate generated at {output_path}")
 
 
 # **************************************************************************************************
@@ -162,6 +160,7 @@ def handle_upload():
 
 
         flash(f'Certificates generated successfully for rows {start + 1} to {end}.')
+        return redirect(url_for('upload_file'))
     # -------------- if the the generation mode is specific ----------------------
     elif generation_mode == "specific":
         # serial number is coming from the form.
@@ -193,7 +192,7 @@ def handle_upload():
         generate_certificate(participant_row, template_path, output_path, column_coordinates, column_fonts)
 
         flash(f'Certificate generated successfully for {participant_row["name"]}.')
-        # return redirect(url_for('download_zip'))
+        return redirect(url_for('upload_file'))
     
     else:
         flash("Invalid genration mode selected.")
@@ -202,50 +201,5 @@ def handle_upload():
     return redirect(url_for('upload_file'))
 
 
-@app.route('/download_zip', methods=['GET'])
-def download_zip():
-    output_folder = app.config['CERTIFICATE_FOLDER']
-    zip_buffer = io.BytesIO()
-
-    try:
-        # Create the ZIP file in memory
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for root, dirs, files in os.walk(output_folder):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    zipf.write(file_path, os.path.relpath(file_path, output_folder))
-        
-        zip_buffer.seek(0)
-
-        # Send the ZIP file to the client
-        response = send_file(
-            zip_buffer,
-            mimetype='application/zip',
-            as_attachment=True,
-            download_name='certificates.zip'
-        )
-
-        # Delete all files and subdirectories in CERTIFICATE_FOLDER after sending
-        delete_certificates(output_folder)
-        return response
-
-    except Exception as e:
-        print(f"Error during ZIP or delete operation: {e}")
-        return "An error occurred during the download process.", 500
-
-def delete_certificates(folder_path):
-    """
-    Deletes all files and subdirectories in the specified folder.
-    """
-    try:
-        shutil.rmtree(folder_path)  # Remove all files and subdirectories
-        shutil.rmtree(UPLOAD_FOLDER)
-        os.makedirs(folder_path, exist_ok=True)  # Recreate the folder to keep it empty
-        os.makedirs(UPLOAD_FOLDER,exist_ok=True)
-        print("Certificates folder and upload folder cleaned up successfully.")
-    except Exception as e:
-        print(f"Error while deleting certificates and uploaded file: {e}")
-
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
